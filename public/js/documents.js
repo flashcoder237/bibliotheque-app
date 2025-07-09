@@ -37,25 +37,26 @@ async function loadDocuments() {
     `;
     documentsTable.appendChild(tr);
   });
-
-  document.querySelectorAll('.edit-doc').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      editDocument(id);
-    });
-  });
-  document.querySelectorAll('.delete-doc').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      deleteDocument(id);
-    });
-  });
 }
+
+// Use event delegation for edit and delete buttons
+documentsTable.addEventListener('click', (event) => {
+  const editBtn = event.target.closest('.edit-doc');
+  if (editBtn) {
+    const id = editBtn.getAttribute('data-id');
+    editDocument(id);
+    return;
+  }
+  const deleteBtn = event.target.closest('.delete-doc');
+  if (deleteBtn) {
+    const id = deleteBtn.getAttribute('data-id');
+    deleteDocument(id);
+  }
+});
 
 async function editDocument(id) {
   try {
-    const doc = await fetchJSON(`/api/documents?search=&categorie=&statut=`);
-    const documentData = doc.find(d => d.id == id);
+    const documentData = await fetchJSON(`/api/documents/${id}`);
     if (!documentData) {
       showToast('Document non trouvé', 'error');
       return;

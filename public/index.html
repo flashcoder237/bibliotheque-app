@@ -202,6 +202,18 @@
                     <button class="btn btn-primary" id="addLoanBtn">
                         <i class="fas fa-plus"></i> Nouvel emprunt
                     </button>
+                    <div class="loan-filters" style="display:inline-block; margin-left: 20px;">
+                        <label for="startDate">Début :</label>
+                        <input type="date" id="startDate" name="startDate" style="margin-right: 10px;">
+                        <label for="endDate">Fin :</label>
+                        <input type="date" id="endDate" name="endDate" style="margin-right: 10px;">
+                        <button class="btn btn-secondary" id="exportLoansBtn" style="margin-right: 5px;">
+                            <i class="fas fa-file-export"></i> Exporter
+                        </button>
+                        <button class="btn btn-secondary" id="printLoansBtn">
+                            <i class="fas fa-print"></i> Imprimer
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="table-container">

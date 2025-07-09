@@ -1,0 +1,40 @@
+{
+  "name": "bibliotheque-app",
+  "version": "1.0.0",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"npm run server\" \"npm run electron-dev\"",
+    "server": "nodemon src/server/server.js",
+    "electron-dev": "electron . --dev",
+    "build": "electron-builder",
+    "build-server": "node src/server/server.js"
+  },
+  "keywords": ["bibliothèque", "electron", "gestion"],
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "electron": "^37.2.0",
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "electron-builder": "^26.0.12",
+    "nodemon": "^3.1.10"
+  },
+  "build": {
+    "appId": "com.bibliotheque.app",
+    "productName": "Bibliothèque Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "public/**/*",
+      "database/**/*"
+    ]
+  }
+}

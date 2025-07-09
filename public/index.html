@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -254,7 +255,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="documentModalTitle">Ajouter un document</h3>
-                <button class="modal-close" onclick="closeModal('documentModal')">
+                <button class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -301,7 +302,7 @@
                     <textarea id="documentDescription" name="description" rows="3"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('documentModal')">
+                    <button type="button" class="btn btn-secondary">
                         Annuler
                     </button>
                     <button type="submit" class="btn btn-primary">
@@ -317,7 +318,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="userModalTitle">Ajouter un utilisateur</h3>
-                <button class="modal-close" onclick="closeModal('userModal')">
+                <button class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -368,7 +369,7 @@
                     <textarea id="userAddress" name="adresse" rows="2"></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">
+                    <button type="button" class="btn btn-secondary">
                         Annuler
                     </button>
                     <button type="submit" class="btn btn-primary">
@@ -384,7 +385,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Nouvel emprunt</h3>
-                <button class="modal-close" onclick="closeModal('loanModal')">
+                <button class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -406,7 +407,7 @@
                     <input type="number" id="loanDuration" name="duree_jours" value="14" min="1" max="365">
                 </div>
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('loanModal')">
+                    <button type="button" class="btn btn-secondary">
                         Annuler
                     </button>
                     <button type="submit" class="btn btn-primary">
@@ -420,6 +421,22 @@
     <!-- Toast notifications -->
     <div id="toastContainer"></div>
 
-    <script src="js/app.js"></script>
+    <script type="module">
+      import { initNavigation } from './js/navigation.js';
+      import './js/app.js';
+      import './js/notifications.js';
+      import { loadDocuments } from './js/documents.js';
+      import { loadUsers } from './js/users.js';
+      import { loadLoans } from './js/loans.js';
+      import { loadStats } from './js/stats.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initNavigation();
+        loadDocuments();
+        loadUsers();
+        loadLoans();
+        loadStats();
+      });
+    </script>
 </body>
 </html>

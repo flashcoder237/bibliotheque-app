@@ -1,3 +1,5 @@
+import { openModal, closeModal, initModals } from './modals.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   // Elements
   const sections = document.querySelectorAll('.content-section');
@@ -60,19 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Modal helpers
-  window.closeModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.style.display = 'none';
-    }
-  };
-
-  window.openModal = function(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.style.display = 'block';
-    }
-  };
 
   // Toast notifications
   const toastContainer = document.getElementById('toastContainer');
@@ -480,5 +469,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Notification badge example (static for now)
   notificationBtn.addEventListener('click', () => {
     alert('Notifications non implémentées');
+  });
+
+  // Initialize modal event listeners
+  initModals();
+
+  // Add event listeners to "Annuler" buttons to close modals
+  const cancelButtons = document.querySelectorAll('.modal .btn-secondary');
+  cancelButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const modal = button.closest('.modal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    });
   });
 });

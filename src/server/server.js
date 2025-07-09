@@ -231,6 +231,54 @@ app.get('/api/utilisateurs', (req, res) => {
   });
 });
 
+// Get single user by ID
+app.get('/api/utilisateurs/:id', (req, res) => {
+  const { id } = req.params;
+  db.get('SELECT * FROM utilisateurs WHERE id = ?', [id], (err, row) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else if (!row) {
+      res.status(404).json({ error: 'Utilisateur non trouvé' });
+    } else {
+      res.json(row);
+    }
+  });
+});
+
+// Update user by ID
+app.put('/api/utilisateurs/:id', (req, res) => {
+  const { id } = req.params;
+  const { nom, prenom, email, telephone, adresse, type_utilisateur, classe, grade, matricule, lieu_affectation, statut } = req.body;
+
+  db.run(
+    `UPDATE utilisateurs SET 
+      nom = ?, prenom = ?, email = ?, telephone = ?, adresse = ?, 
+      type_utilisateur = ?, classe = ?, grade = ?, matricule = ?, lieu_affectation = ?, statut = ?
+      WHERE id = ?`,
+    [nom, prenom, email, telephone, adresse, type_utilisateur, classe, grade, matricule, lieu_affectation, statut, id],
+    function(err) {
+      if (err) {
+        res.status(500).json({ error: err.message });
+      } else {
+        res.json({ message: 'Utilisateur mis à jour avec succès' });
+      }
+    }
+  );
+});
+
+// Delete user by ID
+app.delete('/api/utilisateurs/:id', (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM utilisateurs WHERE id = ?', [id], function(err) {
+    if (err) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.json({ message: 'Utilisateur supprimé avec succès' });
+    }
+  });
+});
+
+
 app.post('/api/utilisateurs', (req, res) => {
   const { nom, prenom, email, telephone, adresse, type_utilisateur } = req.body;
   

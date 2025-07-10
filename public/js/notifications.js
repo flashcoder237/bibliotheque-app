@@ -1,3 +1,4 @@
+
 const toastContainer = document.getElementById('toastContainer');
 
 export function showToast(message, type = 'info', duration = 3000) {
@@ -8,4 +9,8 @@ export function showToast(message, type = 'info', duration = 3000) {
   setTimeout(() => {
     toast.remove();
   }, duration);
+}
+
+export function initNotifications() {
+  // Initialize notification system if needed
 }

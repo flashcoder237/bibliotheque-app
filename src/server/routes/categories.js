@@ -11,9 +11,9 @@ router.get('/', (req, res) => {
   let dataQuery = 'SELECT * FROM categories WHERE 1=1';
 
   if (search) {
-    countQuery += ' AND (nom LIKE ? OR prefixe LIKE ?)';
-    dataQuery += ' AND (nom LIKE ? OR prefixe LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`);
+    countQuery += ' AND (nom LIKE ?)';
+    dataQuery += ' AND (nom LIKE ?)';
+    params.push(`%${search}%`);
   }
 
   dataQuery += ' ORDER BY nom LIMIT ? OFFSET ?';
@@ -42,10 +42,10 @@ router.get('/', (req, res) => {
 
 // Create a new category
 router.post('/', (req, res) => {
-  const { nom, prefixe, prochain_numero } = req.body;
+  const { nom, prefixe, numero_debut, numero_fin } = req.body;
   db.run(
-    'INSERT INTO categories (nom, prefixe, prochain_numero) VALUES (?, ?, ?)',
-    [nom, prefixe, prochain_numero || 1],
+    'INSERT INTO categories (nom, prefixe, numero_debut, numero_fin) VALUES (?, ?, ?, ?)',
+    [nom, prefixe, numero_debut || 1, numero_fin || 1],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -59,10 +59,10 @@ router.post('/', (req, res) => {
 // Update a category
 router.put('/:id', (req, res) => {
   const { id } = req.params;
-  const { nom, prefixe, prochain_numero } = req.body;
+  const { nom, prefixe, numero_debut, numero_fin } = req.body;
   db.run(
-    'UPDATE categories SET nom = ?, prefixe = ?, prochain_numero = ? WHERE id = ?',
-    [nom, prefixe, prochain_numero, id],
+    'UPDATE categories SET nom = ?, prefixe = ?, numero_debut = ?, numero_fin = ? WHERE id = ?',
+    [nom, prefixe, numero_debut, numero_fin, id],
     function (err) {
       if (err) {
         res.status(500).json({ error: err.message });

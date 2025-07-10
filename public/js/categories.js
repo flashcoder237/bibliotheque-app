@@ -16,8 +16,8 @@ export async function loadCategories(page = 1, limit = 10, search = '') {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${cat.nom}</td>
-      <td>${cat.prefixe}</td>
-      <td>${cat.prochain_numero}</td>
+      <td>${cat.numero_debut}</td>
+      <td>${cat.numero_fin}</td>
       <td>
         <button class="btn btn-sm btn-primary edit-cat" data-id="${cat.id}"><i class="fas fa-edit"></i></button>
         <button class="btn btn-sm btn-danger delete-cat" data-id="${cat.id}"><i class="fas fa-trash"></i></button>
@@ -68,8 +68,9 @@ async function editCategory(id) {
     const categoryForm = document.getElementById('categoryForm');
     categoryModalTitle.textContent = 'Modifier la catégorie';
     categoryForm.nom.value = categoryData.nom;
-    categoryForm.prefixe.value = categoryData.prefixe;
-    categoryForm.prochain_numero.value = categoryData.prochain_numero;
+    // Removed prefixe field as per user request
+    categoryForm.numero_debut.value = categoryData.numero_debut;
+    categoryForm.numero_fin.value = categoryData.numero_fin;
     openModal('categoryModal');
   } catch (error) {
     // error handled in fetchJSON
@@ -96,6 +97,9 @@ export function initCategories() {
     e.preventDefault();
     const formData = new FormData(categoryForm);
     const data = Object.fromEntries(formData.entries());
+
+    // Remove prefixe from data before sending to backend
+    delete data.prefixe;
 
     try {
       if (editingCategoryId) {

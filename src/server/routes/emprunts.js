@@ -14,12 +14,13 @@ router.get('/', (req, res) => {
     WHERE 1=1
   `;
   let dataQuery = `
-    SELECT e.*, d.titre, d.auteur, u.nom, u.prenom, u.email
+    SELECT e.*, d.titre, d.auteur, u.nom, u.prenom, u.email, u.type_utilisateur
     FROM emprunts e
     JOIN documents d ON e.document_id = d.id
     JOIN utilisateurs u ON e.utilisateur_id = u.id
     WHERE 1=1
   `;
+
 
   if (search) {
     countQuery += ' AND (d.titre LIKE ? OR d.auteur LIKE ? OR u.nom LIKE ? OR u.prenom LIKE ?)';

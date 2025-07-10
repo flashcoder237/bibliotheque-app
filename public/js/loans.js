@@ -19,6 +19,9 @@ export async function loadLoans(page = 1, limit = 10, search = '', statut = '') 
     tr.innerHTML = `
       <td>${loan.titre}</td>
       <td>${loan.nom} ${loan.prenom}</td>
+      <td>${loan.type_utilisateur || ''}</td>
+      <td>${loan.classe || loan.grade || loan.lieu_affectation || ''}</td>
+      <td>${loan.matricule || ''}</td>
       <td>${new Date(loan.date_emprunt).toLocaleDateString()}</td>
       <td>${new Date(loan.date_retour_prevue).toLocaleDateString()}</td>
       <td>${loan.statut}</td>
@@ -64,59 +67,115 @@ async function returnLoan(id) {
   }
 }
 
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+function createSuggestionItem(text, id, onClick) {
+  const div = document.createElement('div');
+  div.className = 'autocomplete-suggestion';
+  div.textContent = text;
+  div.addEventListener('click', () => onClick(id, text));
+  return div;
+}
+
 export function initLoans() {
   const addLoanBtn = document.getElementById('addLoanBtn');
   const loanForm = document.getElementById('loanForm');
   const loanDocumentInput = document.getElementById('loanDocumentInput');
+  const loanDocumentHidden = document.getElementById('loanDocument');
+  const loanDocumentSuggestions = document.getElementById('loanDocumentSuggestions');
   const loanUserInput = document.getElementById('loanUserInput');
-  const loanDocumentSelect = document.getElementById('loanDocumentSelect');
-  const loanUserSelect = document.getElementById('loanUserSelect');
+  const loanUserHidden = document.getElementById('loanUser');
+  const loanUserSuggestions = document.getElementById('loanUserSuggestions');
 
-  addLoanBtn.addEventListener('click', async () => {
+  addLoanBtn.addEventListener('click', () => {
     loanDocumentInput.value = '';
+    loanDocumentHidden.value = '';
+    loanDocumentSuggestions.innerHTML = '';
     loanUserInput.value = '';
-    loanDocumentSelect.innerHTML = '';
-    loanUserSelect.innerHTML = '';
+    loanUserHidden.value = '';
+    loanUserSuggestions.innerHTML = '';
     loanForm.reset();
     openModal('loanModal');
   });
 
-  loanDocumentInput.addEventListener('input', async () => {
+  const fetchDocumentSuggestions = debounce(async () => {
     const query = loanDocumentInput.value.trim();
     if (query.length < 2) {
-      loanDocumentSelect.innerHTML = '';
+      loanDocumentSuggestions.innerHTML = '';
+      loanDocumentHidden.value = '';
       return;
     }
-    const docs = await fetchJSON(`/api/documents?search=${encodeURIComponent(query)}&statut=disponible`);
-    loanDocumentSelect.innerHTML = '<option value="">Sélectionnez un document</option>';
-    docs.data.forEach(doc => {
-      const option = document.createElement('option');
-      option.value = doc.id;
-      option.textContent = `${doc.titre} (${doc.auteur})`;
-      loanDocumentSelect.appendChild(option);
-    });
-  });
+    try {
+      const docs = await fetchJSON(`/api/documents?search=${encodeURIComponent(query)}&statut=disponible`);
+      loanDocumentSuggestions.innerHTML = '';
+      docs.data.forEach(doc => {
+        const item = createSuggestionItem(`${doc.titre} (${doc.auteur})`, doc.id, (id, text) => {
+          loanDocumentInput.value = text;
+          loanDocumentHidden.value = id;
+          loanDocumentSuggestions.innerHTML = '';
+        });
+        loanDocumentSuggestions.appendChild(item);
+      });
+    } catch (error) {
+      loanDocumentSuggestions.innerHTML = '';
+    }
+  }, 300);
 
-  loanUserInput.addEventListener('input', async () => {
+  loanDocumentInput.addEventListener('input', fetchDocumentSuggestions);
+
+  const fetchUserSuggestions = debounce(async () => {
     const query = loanUserInput.value.trim();
     if (query.length < 2) {
-      loanUserSelect.innerHTML = '';
+      loanUserSuggestions.innerHTML = '';
+      loanUserHidden.value = '';
       return;
     }
-    const users = await fetchJSON(`/api/utilisateurs?search=${encodeURIComponent(query)}`);
-    loanUserSelect.innerHTML = '<option value="">Sélectionnez un utilisateur</option>';
-    users.forEach(user => {
-      const option = document.createElement('option');
-      option.value = user.id;
-      option.textContent = `${user.nom} ${user.prenom}`;
-      loanUserSelect.appendChild(option);
-    });
-  });
+    try {
+      const users = await fetchJSON(`/api/utilisateurs?search=${encodeURIComponent(query)}`);
+      loanUserSuggestions.innerHTML = '';
+      users.data?.forEach ? users.data.forEach(user => {
+        const item = createSuggestionItem(`${user.nom} ${user.prenom}`, user.id, (id, text) => {
+          loanUserInput.value = text;
+          loanUserHidden.value = id;
+          loanUserSuggestions.innerHTML = '';
+        });
+        loanUserSuggestions.appendChild(item);
+      }) : users.forEach(user => {
+        const item = createSuggestionItem(`${user.nom} ${user.prenom}`, user.id, (id, text) => {
+          loanUserInput.value = text;
+          loanUserHidden.value = id;
+          loanUserSuggestions.innerHTML = '';
+        });
+        loanUserSuggestions.appendChild(item);
+      });
+    } catch (error) {
+      loanUserSuggestions.innerHTML = '';
+    }
+  }, 300);
+
+  loanUserInput.addEventListener('input', fetchUserSuggestions);
 
   loanForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!loanDocumentHidden.value) {
+      showToast('Veuillez sélectionner un document valide dans la liste.', 'error');
+      return;
+    }
+    if (!loanUserHidden.value) {
+      showToast('Veuillez sélectionner un utilisateur valide dans la liste.', 'error');
+      return;
+    }
     const formData = new FormData(loanForm);
     const data = Object.fromEntries(formData.entries());
+    // Remove the temporary input fields from data
+    delete data.loanDocumentInput;
+    delete data.loanUserInput;
 
     try {
       await fetchJSON('/api/emprunts', {
@@ -131,13 +190,6 @@ export function initLoans() {
     } catch (error) {
       // error handled in fetchJSON
     }
-  });
-  loanDocumentSelect.addEventListener('change', () => {
-    loanDocumentInput.value = loanDocumentSelect.options[loanDocumentSelect.selectedIndex].text;
-  });
-
-  loanUserSelect.addEventListener('change', () => {
-    loanUserInput.value = loanUserSelect.options[loanUserSelect.selectedIndex].text;
   });
 
   loadLoans();

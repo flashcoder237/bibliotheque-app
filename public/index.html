@@ -1,12 +1,12 @@
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliothèque Manager</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bibliothèque App</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
     <div class="app-container">
@@ -26,8 +26,9 @@
                 </div>
             </div>
         </header>
-
-        <!-- Navigation -->
+<!-- Pagination containers for tables -->
+  <div id="categoriesPagination" class="pagination-container"></div>
+  <!-- Navigation -->
         <nav class="sidebar">
             <div class="nav-menu">
                 <button class="nav-item active" data-section="dashboard">
@@ -312,8 +313,9 @@
                 <div class="form-group">
                     <label for="documentDescription">Description</label>
                     <textarea id="documentDescription" name="description" rows="3"></textarea>
-                </div>
-                <div class="form-actions">
+</div>
+  <div id="loansPagination" class="pagination-container"></div>
+  <div class="form-actions">
                     <button type="button" class="btn btn-secondary">
                         Annuler
                     </button>

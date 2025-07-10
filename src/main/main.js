@@ -4,28 +4,26 @@ const { spawn } = require('child_process');
 
 let mainWindow;
 let serverProcess;
+const PORT = 3000;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      enableRemoteModule: true
+      preload: path.join(__dirname, '../renderer/preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
     },
     icon: path.join(__dirname, '../../public/images/icon.png')
   });
 
-  // Démarrer le serveur
-  startServer();
+  startServer().then(() => {
+    mainWindow.loadURL(`http://localhost:${PORT}`);
+  }).catch(err => {
+    console.error('Failed to start server:', err);
+  });
 
-  // Charger l'interface après un délai pour laisser le serveur démarrer
-  setTimeout(() => {
-    mainWindow.loadURL('http://localhost:3000');
-  }, 2000);
-
-  // Ouvrir les outils de développement en mode dev
   if (process.argv.includes('--dev')) {
     mainWindow.webContents.openDevTools();
   }
@@ -39,14 +37,28 @@ function createWindow() {
 }
 
 function startServer() {
-  const serverPath = path.join(__dirname, '../server/server.js');
-  serverProcess = spawn('node', [serverPath], {
-    cwd: process.cwd(),
-    stdio: 'inherit'
-  });
+  return new Promise((resolve, reject) => {
+    const serverPath = path.join(__dirname, '../server/server.js');
+    serverProcess = spawn('node', [serverPath], {
+      cwd: process.cwd(),
+      stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+    });
 
-  serverProcess.on('error', (err) => {
-    console.error('Erreur du serveur:', err);
+    serverProcess.stdout.on('data', (data) => {
+      console.log(`Server: ${data}`);
+      if (data.toString().includes('Serveur démarré')) {
+        resolve();
+      }
+    });
+
+    serverProcess.stderr.on('data', (data) => {
+      console.error(`Server Error: ${data}`);
+    });
+
+    serverProcess.on('error', (err) => {
+      console.error('Erreur du serveur:', err);
+      reject(err);
+    });
   });
 }
 
@@ -139,23 +151,6 @@ app.on('activate', () => {
   }
 });
 
-// Gérer les messages IPC
-ipcMain.on('get-app-version', (event) => {
-  event.reply('app-version', app.getVersion());
-});
-
-ipcMain.on('minimize-window', () => {
-  mainWindow.minimize();
-});
-
-ipcMain.on('maximize-window', () => {
-  if (mainWindow.isMaximized()) {
-    mainWindow.unmaximize();
-  } else {
-    mainWindow.maximize();
-  }
-});
-
-ipcMain.on('close-window', () => {
-  mainWindow.close();
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
 });

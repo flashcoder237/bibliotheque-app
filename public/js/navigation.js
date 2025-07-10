@@ -1,6 +1,6 @@
 export function initNavigation() {
-  const sections = document.querySelectorAll('.content-section');
   const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('.content-section');
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {

@@ -2,12 +2,6 @@ import { fetchJSON } from './api.js';
 import { showToast } from './notifications.js';
 import { openModal, closeModal } from './modals.js';
 
-const usersTable = document.getElementById('usersTable');
-const addUserBtn = document.getElementById('addUserBtn');
-const userModal = document.getElementById('userModal');
-const userForm = document.getElementById('userForm');
-const userModalTitle = document.getElementById('userModalTitle');
-
 let editingUserId = null;
 
 function updateUserFormFields(type) {
@@ -33,12 +27,8 @@ function updateUserFormFields(type) {
   }
 }
 
-const userTypeSelect = document.getElementById('userType');
-userTypeSelect.addEventListener('change', (e) => {
-  updateUserFormFields(e.target.value);
-});
-
-async function loadUsers() {
+export async function loadUsers() {
+  const usersTable = document.getElementById('usersTable');
   const users = await fetchJSON('/api/utilisateurs');
   usersTable.innerHTML = '';
   users.forEach(user => {
@@ -67,31 +57,32 @@ async function loadUsers() {
     `;
     usersTable.appendChild(tr);
   });
-}
 
-// Use event delegation for edit and delete buttons
-usersTable.addEventListener('click', (event) => {
-  const editBtn = event.target.closest('.edit-user');
-  if (editBtn) {
-    const id = editBtn.getAttribute('data-id');
-    editUser(id);
-    return;
-  }
-  const deleteBtn = event.target.closest('.delete-user');
-  if (deleteBtn) {
-    const id = deleteBtn.getAttribute('data-id');
-    deleteUser(id);
-  }
-});
+  document.querySelectorAll('.edit-user').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      editUser(id);
+    });
+  });
+  document.querySelectorAll('.delete-user').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      deleteUser(id);
+    });
+  });
+}
 
 async function editUser(id) {
   try {
-    const userData = await fetchJSON(`/api/utilisateurs/${id}`);
+    const users = await fetchJSON('/api/utilisateurs');
+    const userData = users.find(u => u.id == id);
     if (!userData) {
       showToast('Utilisateur non trouvé', 'error');
       return;
     }
     editingUserId = id;
+    const userModalTitle = document.getElementById('userModalTitle');
+    const userForm = document.getElementById('userForm');
     userModalTitle.textContent = 'Modifier un utilisateur';
     userForm.nom.value = userData.nom;
     userForm.prenom.value = userData.prenom;
@@ -99,7 +90,6 @@ async function editUser(id) {
     userForm.telephone.value = userData.telephone || '';
     userForm.adresse.value = userData.adresse || '';
     userForm.type_utilisateur.value = userData.type_utilisateur || 'lecteur';
-    updateUserFormFields(userData.type_utilisateur);
     openModal('userModal');
   } catch (error) {
     // error handled in fetchJSON
@@ -117,41 +107,50 @@ async function deleteUser(id) {
   }
 }
 
-userForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(userForm);
-  const data = Object.fromEntries(formData.entries());
+export function initUsers() {
+  const userForm = document.getElementById('userForm');
+  const addUserBtn = document.getElementById('addUserBtn');
+  const userTypeSelect = document.getElementById('userType');
 
-  try {
-    if (editingUserId) {
-      await fetchJSON(`/api/utilisateurs/${editingUserId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      showToast('Utilisateur mis à jour avec succès', 'success');
-    } else {
-      await fetchJSON('/api/utilisateurs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      showToast('Utilisateur ajouté avec succès', 'success');
+  userTypeSelect.addEventListener('change', (e) => {
+    updateUserFormFields(e.target.value);
+  });
+
+  userForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(userForm);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      if (editingUserId) {
+        await fetchJSON(`/api/utilisateurs/${editingUserId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        showToast('Utilisateur mis à jour avec succès', 'success');
+      } else {
+        await fetchJSON('/api/utilisateurs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        showToast('Utilisateur ajouté avec succès', 'success');
+      }
+      closeModal('userModal');
+      editingUserId = null;
+      userForm.reset();
+      loadUsers();
+    } catch (error) {
+      // error handled in fetchJSON
     }
-    closeModal('userModal');
+  });
+
+  addUserBtn.addEventListener('click', () => {
     editingUserId = null;
+    const userModalTitle = document.getElementById('userModalTitle');
+    userModalTitle.textContent = 'Ajouter un utilisateur';
     userForm.reset();
-    loadUsers();
-  } catch (error) {
-    // error handled in fetchJSON
-  }
-});
-
-addUserBtn.addEventListener('click', () => {
-  editingUserId = null;
-  userModalTitle.textContent = 'Ajouter un utilisateur';
-  userForm.reset();
-  openModal('userModal');
-});
-
-export { loadUsers };
+    openModal('userModal');
+  });
+}

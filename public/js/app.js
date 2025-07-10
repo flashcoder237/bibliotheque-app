@@ -466,10 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadLoans();
   loadStats();
 
-  // Notification badge example (static for now)
-  notificationBtn.addEventListener('click', () => {
-    alert('Notifications non implémentées');
-  });
+ 
 
   // Initialize modal event listeners
   initModals();

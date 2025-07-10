@@ -432,11 +432,12 @@
 
     <!-- Toast notifications -->
     <div id="toastContainer"></div>
+    <div id="notificationPanel" class="notification-panel" style="display:none;"></div>
 
     <script type="module">
       import { initNavigation } from './js/navigation.js';
-      import './js/app.js';
       import './js/notifications.js';
+      import './js/app.js';
       import { loadDocuments } from './js/documents.js';
       import { loadUsers } from './js/users.js';
       import { loadLoans } from './js/loans.js';
@@ -448,6 +449,9 @@
         loadUsers();
         loadLoans();
         loadStats();
+        import('./js/notifications.js').then(module => {
+          module.initNotifications();
+        });
       });
     </script>
 </body>

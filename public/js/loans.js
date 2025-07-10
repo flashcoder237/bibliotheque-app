@@ -1,5 +1,5 @@
 import { fetchJSON } from './api.js';
-import { showToast } from './notifications.js';
+import { showToast, addNotification } from './notifications.js';
 import { openModal, closeModal } from './modals.js';
 
 const loansTable = document.getElementById('loansTable');
@@ -141,7 +141,7 @@ async function returnLoan(id) {
   if (!confirm('Confirmer le retour du document ?')) return;
   try {
     await fetchJSON(`/api/emprunts/${id}/retour`, { method: 'PUT' });
-    showToast('Retour enregistré avec succès', 'success');
+    addNotification('Retour enregistré avec succès', 'success');
     loadLoans();
     // Reload documents to update availability
     const { loadDocuments } = await import('./documents.js');
@@ -173,8 +173,12 @@ addLoanBtn.addEventListener('click', async () => {
   openModal('loanModal');
 });
 
+let isSubmittingLoanForm = false;
+
 loanForm.addEventListener('submit', async (e) => {
   e.preventDefault();
+  if (isSubmittingLoanForm) return;
+  isSubmittingLoanForm = true;
   const formData = new FormData(loanForm);
   const data = Object.fromEntries(formData.entries());
 
@@ -184,13 +188,15 @@ loanForm.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    showToast('Emprunt créé avec succès', 'success');
+    addNotification('Emprunt créé avec succès', 'success');
     closeModal('loanModal');
     loadLoans();
     const { loadDocuments } = await import('./documents.js');
     loadDocuments();
   } catch (error) {
     // error handled in fetchJSON
+  } finally {
+    isSubmittingLoanForm = false;
   }
 });
 
@@ -202,7 +208,8 @@ if (exportLoansBtn && printLoansBtn && startDateInput && endDateInput) {
     const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
     const filteredLoans = filterLoansByDate(allLoans, startDate, endDate);
     if (filteredLoans.length === 0) {
-      showToast('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
+-      showToast('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
++      addNotification('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
       return;
     }
     const csvContent = loansToCSV(filteredLoans);
@@ -214,7 +221,8 @@ if (exportLoansBtn && printLoansBtn && startDateInput && endDateInput) {
     const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
     const filteredLoans = filterLoansByDate(allLoans, startDate, endDate);
     if (filteredLoans.length === 0) {
-      showToast('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
+-      showToast('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
++      addNotification('Aucun emprunt trouvé pour la période sélectionnée.', 'info');
       return;
     }
     printLoans(filteredLoans);

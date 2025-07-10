@@ -887,3 +887,58 @@ form {
 .sidebar-overlay.active {
     display: block;
 }
+
+/* Notification panel styles */
+.notification-panel {
+    position: fixed;
+    top: 60px;
+    right: 20px;
+    width: 320px;
+    max-height: 400px;
+    background: var(--background-light);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    overflow-y: auto;
+    z-index: 3000;
+    display: none;
+    flex-direction: column;
+    padding: 0.5rem 0;
+}
+
+.notification-item {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--primary);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: rgba(194, 87, 27, 0.1);
+    font-weight: 600;
+}
+
+.notification-item.read {
+    background-color: transparent;
+    color: var(--text-secondary);
+}
+
+.notification-item:hover {
+    background-color: rgba(194, 87, 27, 0.2);
+}
+
+.notification-message {
+    margin-bottom: 0.3rem;
+}
+
+.notification-timestamp {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    align-self: flex-end;
+}

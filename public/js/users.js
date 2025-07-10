@@ -67,25 +67,26 @@ async function loadUsers() {
     `;
     usersTable.appendChild(tr);
   });
-
-  document.querySelectorAll('.edit-user').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      editUser(id);
-    });
-  });
-  document.querySelectorAll('.delete-user').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      deleteUser(id);
-    });
-  });
 }
+
+// Use event delegation for edit and delete buttons
+usersTable.addEventListener('click', (event) => {
+  const editBtn = event.target.closest('.edit-user');
+  if (editBtn) {
+    const id = editBtn.getAttribute('data-id');
+    editUser(id);
+    return;
+  }
+  const deleteBtn = event.target.closest('.delete-user');
+  if (deleteBtn) {
+    const id = deleteBtn.getAttribute('data-id');
+    deleteUser(id);
+  }
+});
 
 async function editUser(id) {
   try {
-    const users = await fetchJSON('/api/utilisateurs');
-    const userData = users.find(u => u.id == id);
+    const userData = await fetchJSON(`/api/utilisateurs/${id}`);
     if (!userData) {
       showToast('Utilisateur non trouvé', 'error');
       return;
